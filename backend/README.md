@@ -22,8 +22,6 @@ Registers a new user in the system. Accepts user details, hashes the password, c
 ```
 
 ## Success Response
-- **Status Code:** `200 OK`
-- **Body:**
 ```
 {
   "token": "JWT token string",
@@ -41,7 +39,6 @@ Registers a new user in the system. Accepts user details, hashes the password, c
 ```
 
 ## Error Responses
-- **Status Code:** `400 Bad Request`
   - **Description:** Validation failed (missing or invalid fields)
   - **Body:**
     ```
@@ -52,10 +49,70 @@ Registers a new user in the system. Accepts user details, hashes the password, c
     }
     ```
 
-- **Status Code:** `500 Internal Server Error`
   - **Description:** Server error or database failure
 
 ## Notes
-- Passwords are securely hashed before storage.
-- Email must be unique.
+
+## User Login API Documentation
+
+### Route
+
+`POST /user/login`
+
+### Description
+Authenticates a user with email and password. Returns a JWT token and user data if credentials are valid.
+
+### Request Body
+```
+{
+  "email": "string (valid email)",
+  "password": "string (min 6 chars)"
+}
+```
+
+### Success Response
+- **Status Code:** `200 OK`
+- **Body:**
+```
+{
+  "token": "JWT token string",
+  "user": {
+    "_id": "user id",
+    "fullName": {
+      "firstName": "...",
+      "lastName": "..."
+    },
+    "email": "..."
+    // other user fields
+  },
+  "message": "Successfully logged in"
+}
+```
+
+### Error Responses
+- **Status Code:** `400 Bad Request`
+  - **Description:** Validation failed (missing or invalid fields)
+  - **Body:**
+    ```
+    {
+      "errors": [
+        { "msg": "Error message", ... }
+      ]
+    }
+    ```
+
+- **Status Code:** `401 Unauthorized`
+  - **Description:** Invalid email or password
+  - **Body:**
+    ```
+    {
+      "message": "Invalid email or password"
+    }
+    ```
+
+- **Status Code:** `500 Internal Server Error`
+  - **Description:** Server error or database failure
+
+### Notes
 - Returns a JWT token for authentication.
+- Password is never returned in the response.
