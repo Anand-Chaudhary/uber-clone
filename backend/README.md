@@ -1,4 +1,4 @@
-# User Registration Endpoint Documentation
+# User Registration & Login Endpoint Documentation
 
 ## POST `/users/register`
 
@@ -64,7 +64,75 @@ Send a JSON object with the following structure:
 }
 ```
 
+
+---
+
+## POST `/login`
+
+### Description
+Authenticates a user with email and password. Returns a JWT token if credentials are valid.
+
+### Request Body
+Send a JSON object with the following structure:
+
+```
+{
+  "email": "john.doe@example.com",
+  "password": "yourpassword"
+}
+```
+
+- `email` (string, required, must be a valid email)
+- `password` (string, required)
+
+### Responses
+
+#### Success (200 OK)
+```
+{
+  "success": true,
+  "message": "Login successful",
+  "user": {
+    "_id": "<user_id>",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com",
+    "socketId": ""
+    // ...other user fields
+  },
+  "token": "<jwt_token>"
+}
+```
+
+#### Authentication Error (401 Unauthorized)
+```
+{
+  "success": false,
+  "message": "Invalid email or password"
+}
+```
+
+#### Validation Error (400 Bad Request)
+```
+{
+  "success": false,
+  "message": "Errors",
+  "errors": [
+    // Array of validation error messages
+  ]
+}
+```
+
+#### Other Errors (500 Internal Server Error)
+```
+{
+  "success": false,
+  "message": "Internal server error"
+}
+```
+
 ### Notes
-- All required fields must be provided and valid.
+- Email and password must be provided.
 - On success, a JWT token is returned for authentication.
-- Passwords are securely hashed before storage.

@@ -7,10 +7,16 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const db_1 = __importDefault(require("./db/db"));
+const morgan_1 = __importDefault(require("morgan"));
+const user_routes_1 = __importDefault(require("./routes/user.routes"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 (0, db_1.default)();
 app.use((0, cors_1.default)());
+app.use((0, morgan_1.default)("dev"));
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
+app.use('/users', user_routes_1.default);
 app.get('/', (req, res) => {
     res.send('Hello world');
 });

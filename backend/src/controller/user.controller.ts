@@ -27,3 +27,39 @@ export const registerUser = async (req: Request, res: Response) => {
         token
     });
 }
+
+export const loginUser = async (req: Request, res: Response) => {
+    const error = validationResult(req)
+    if (!error.isEmpty()) {
+        return res.status(400).json({errors: error.array()})
+    }
+
+    const {email, password} = req.body;
+
+    const existingUser = await UserModel.findOne({email}).select("+password");
+
+    if(!existingUser){
+        return res.status(401).json({
+            success: false,
+            message: "Invalid email or password"
+        })
+    }
+
+    const matched = await existingUser.comparePassword(password);
+
+    if(!matched){
+        return res.status(401).json({
+            success: false,
+            message: "Invalid email or password"
+        })
+    }
+
+    const token = existingUser.generateAuthToken();
+
+    return res.status(201).json({
+        success: true,
+        message: "User Logged In",
+        existingUser,
+        token
+    })
+}

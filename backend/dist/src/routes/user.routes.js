@@ -36,44 +36,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importStar(require("mongoose"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const UserSchema = new mongoose_1.Schema({
-    fullname: {
-        firstname: {
-            type: String,
-            require: [true, "Enter your name"],
-            minLength: [3, "Your name must have 3 characters"]
-        },
-        lastname: {
-            type: String,
-            minLength: [3, "Your name must have 3 characters"]
-        }
-    },
-    email: {
-        type: String,
-        required: [true, "Enter your email"],
-    },
-    password: {
-        type: String,
-        required: [true, "Enter your password"],
-        select: false,
-    },
-    socketId: {
-        type: String,
-    }
-});
-UserSchema.methods.generateAuthToken = function () {
-    const token = jsonwebtoken_1.default.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    return token;
-};
-UserSchema.methods.comparePassword = async function (password) {
-    return await bcryptjs_1.default.compare(password, this.password);
-};
-UserSchema.statics.hashPassword = async function (password) {
-    return await bcryptjs_1.default.hash(password, 10);
-};
-const UserModel = mongoose_1.default.model('user', UserSchema);
-exports.default = UserModel;
-//# sourceMappingURL=user.model.js.map
+const express_1 = __importDefault(require("express"));
+const express_validator_1 = require("express-validator");
+const userController = __importStar(require("../controller/user.controller"));
+const router = express_1.default.Router();
+router.post('/register', [
+    (0, express_validator_1.body)('email').isEmail().withMessage("Invalid Email"),
+    (0, express_validator_1.body)('fullname.firstname').isLength({ min: 3 }).withMessage("Your name must have 3 characters"),
+    (0, express_validator_1.body)('password').isLength({ min: 6 }).withMessage("Pswword must be of 6 characters")
+], userController.registerUser);
+router.post('/login', [
+    (0, express_validator_1.body)('email').isEmail().withMessage("Invalid Email"),
+    (0, express_validator_1.body)('password').isLength({ min: 6 }).withMessage("Pswword must be of 6 characters")
+], userController.loginUser);
+exports.default = router;
+//# sourceMappingURL=user.routes.js.map
