@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors'
 import dbConnect from './db/db';
 import morgan from 'morgan'
+import cookie from 'cookie-parser'
 import userRoute from './routes/user.routes'
 
 const app = express();
@@ -12,7 +13,8 @@ dbConnect()
 app.use(cors())
 app.use(morgan("dev"))
 app.use(express.json())
-app.use(express.urlencoded({extended:true}));
+app.use(express.urlencoded({extended:true}))
+app.use(cookie());
 
 app.use('/users', userRoute)
 
