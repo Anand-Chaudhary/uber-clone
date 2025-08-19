@@ -5,6 +5,7 @@ import dbConnect from './db/db';
 import morgan from 'morgan'
 import cookie from 'cookie-parser'
 import userRoute from './routes/user.routes'
+import captainRoute from './routes/captain.routes'
 
 const app = express();
 dotenv.config()
@@ -17,6 +18,7 @@ app.use(express.urlencoded({extended:true}))
 app.use(cookie());
 
 app.use('/users', userRoute)
+app.use('/captain', captainRoute)
 
 app.get('/', (req, res)=>{
     res.send('Hello world');

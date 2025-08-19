@@ -11,6 +11,8 @@ export const registerUser = async (req: Request, res: Response) => {
     }
     const { fullname, email, password } = req.body;
 
+    const existingUser = UserModel.findOne(email)
+
     const hashPassword: string = await UserModel.hashPassword(password)
 
     const user = await userService.createUser({

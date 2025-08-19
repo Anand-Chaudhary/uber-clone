@@ -1,4 +1,4 @@
-import mongoose, {Document, Schema, Model} from 'mongoose'
+import mongoose, { Document, Schema, Model } from 'mongoose'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 
@@ -19,41 +19,43 @@ export interface UserModelType extends Model<User> {
 }
 
 const UserSchema: Schema<User> = new Schema({
-    fullname:{
+    fullname: {
         firstname: {
             type: String,
             require: [true, "Enter your name"],
             minLength: [3, "Your name must have 3 characters"]
         },
-        lastname:{
+        lastname: {
             type: String,
             minLength: [3, "Your name must have 3 characters"]
         }
     },
-    email:{
+    email: {
         type: String,
         required: [true, "Enter your email"],
+        lowercase: true,
+        match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Enter a valid email"]
     },
-    password:{
+    password: {
         type: String,
         required: [true, "Enter your password"],
         select: false,
     },
-    socketId:{
+    socketId: {
         type: String,
     }
 })
 
-UserSchema.methods.generateAuthToken = function(){
-    const token = jwt.sign({_id: this._id}, process.env.JWT_SECRET!, {expiresIn: '24h'});
+UserSchema.methods.generateAuthToken = function () {
+    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET!, { expiresIn: '24h' });
     return token
 }
 
-UserSchema.methods.comparePassword = async function(password: string){
+UserSchema.methods.comparePassword = async function (password: string) {
     return await bcrypt.compare(password, this.password)
 }
 
-UserSchema.statics.hashPassword = async function(password: string){
+UserSchema.statics.hashPassword = async function (password: string) {
     return await bcrypt.hash(password, 10)
 }
 
