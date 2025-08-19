@@ -46,6 +46,7 @@ const CaptainSchema: Schema<Captain> = new Schema({
   email: {
     type: String,
     required: [true, "Enter your email"],
+    unique: true,
     match: [
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       "Enter a valid email",

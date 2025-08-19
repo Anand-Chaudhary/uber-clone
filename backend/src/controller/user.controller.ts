@@ -10,23 +10,41 @@ export const registerUser = async (req: Request, res: Response) => {
         throw new Error("Errors")
     }
     const { fullname, email, password } = req.body;
+    const normalizedEmail = (email as string).toLowerCase().trim();
 
-    const existingUser = UserModel.findOne(email)
+    const existingUser = await UserModel.findOne({ email: normalizedEmail })
+
+    if(existingUser){
+        return res.json({
+            success: false,
+            message: "User Exists"
+        })
+    }
 
     const hashPassword: string = await UserModel.hashPassword(password)
 
-    const user = await userService.createUser({
-        firstname: fullname.firstname,
-        lastname: fullname.lastname, 
-        email, 
-        password: hashPassword
-    });
+    let user;
+    try {
+        user = await userService.createUser({
+            firstname: fullname.firstname,
+            lastname: fullname.lastname, 
+            email: normalizedEmail, 
+            password: hashPassword
+        });
+    } catch (err: any) {
+        if (err?.code === 11000 && err?.keyPattern?.email) {
+            return res.status(409).json({ success: false, message: "User Exists" });
+        }
+        throw err;
+    }
 
     const token = user.generateAuthToken();
+    const safeUser = user.toObject();
+    delete (safeUser as any).password;
     return res.status(201).json({
         success: true,
         message: "User registered successfully",
-        user,
+        user: safeUser,
         token
     });
 }
@@ -38,8 +56,9 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     const {email, password} = req.body;
+    const normalizedEmailLogin = (email as string).toLowerCase().trim();
 
-    const existingUser = await UserModel.findOne({email}).select("+password");
+    const existingUser = await UserModel.findOne({ email: normalizedEmailLogin }).select("+password");
 
     if(!existingUser){
         return res.status(401).json({
@@ -61,16 +80,20 @@ export const loginUser = async (req: Request, res: Response) => {
 
     res.cookie('token', token)
 
+    const safeUser = existingUser.toObject();
+    delete (safeUser as any).password;
     return res.status(201).json({
         success: true,
         message: "User Logged In",
-        existingUser,
+        existingUser: safeUser,
         token
     })
 }
 
 export const getUserProfile =  async (req: Request, res: Response) =>{
-    return res.status(200).json(req.user)
+    const safeUser = req.user?.toObject();
+    delete (safeUser as any).password;
+    return res.status(200).json(safeUser)
 }
 
 export const logoutUser = async (req: Request, res: Response) =>{

@@ -2,8 +2,11 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import logo from '@/assets/logo-removebg.png'
+import { registerStore } from '@/stores/userStore/registerStore'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -12,14 +15,26 @@ const SignUp = () => {
     fullname: { firstname: '', lastname: '' },
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSubmit = (e: any) => {
-    e.preventDefault()
+  const { loading, error, register, success, message } = registerStore()
+
+  useEffect(() => {
+    if (message) {
+      if (success) toast.success(message)
+      else toast.error(message || error || 'Something went wrong')
+    }
+  }, [message, success, error])
+
+  // eslint-disable-next-line
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    await register(form);
+
     console.log({
       email: form.email,
       password: form.password,
       fullname: { firstname: form.fullname.firstname, lastname: form.fullname.lastname },
     })
+    
     setForm({ email: '', password: '', fullname: { firstname: '', lastname: '' } })
   }
 
@@ -69,7 +84,15 @@ const SignUp = () => {
           required
         />
 
-        <button className='bg-black text-white font-semibold mb-7 rounded p-4 w-full' type='submit'>Create account</button>
+        <button className={`${loading ? "bg-gray-500 cursor-not-allowed" : "bg-black cursor-pointer"} text-white w-full font-semibold mb-7 rounded p-4 w-full' type='submit'`}>
+          {loading ?
+            <p className='flex gap-2'>
+              <Loader2 className='h-4 w-4 animate-spin' /> Wait...
+            </p> : <p>Create account</p>}
+        </button>
+
+        {/* Toasts handled via useEffect to avoid firing on every render */}
+
         <p className='flex items-center gap-2 justify-center'>
           Already have an account?
           <Link href={`/login`} className='text-blue-500 underline'>Log-in</Link>

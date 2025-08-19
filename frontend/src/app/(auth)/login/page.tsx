@@ -1,21 +1,34 @@
 "use client"
 
 import Image from 'next/image'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import logo from '@/assets/logo-removebg.png'
 import Link from 'next/link'
+import { loginStore } from '@/stores/userStore/loginStore'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 
 const Login = () => {
     const [form, setForm] = useState({
         email: "",
         password: ""
     })
+    
+    const { loading, error, success, login, message } = loginStore()
+
+    useEffect(() => {
+        if (message) {
+            if (success) toast.success(message)
+            else toast.error(message || error || 'Something went wrong')
+        }
+    }, [message, success, error])
 
     //eslint-disable-next-line
-    const handleSubmit =(e: any)=>{
-        e.preventDefault()
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
+        login(form)
         console.log(form);
-        setForm({...form, email: "", password: ""})
+        setForm({ ...form, email: "", password: "" })
     }
 
     return (
@@ -41,15 +54,26 @@ const Login = () => {
                     type="password"
                     placeholder='Password'
                     onChange={
-                        (e)=>setForm({
-                            ...form, 
+                        (e) => setForm({
+                            ...form,
                             password: e.target.value
                         })
-                        
+
                     }
                 />
 
-                <button className='bg-black text-white font-semibold mb-7 rounded p-4 w-full' type='submit'>Log-In</button>
+                <button className={`${loading ? `bg-gray-500 cursor-not-allowed` : `bg-black cursor-pointer`} w-full text-white font-semibold mb-7 rounded p-4 w-full' type='submit'`}>
+                    {
+                        loading ?
+                            <p className='flex gap-8'>
+                                <Loader2 className='h-4 w-4 animate-spin' />
+                                Wait...
+                            </p> : <p>Log-In</p>
+                    }
+                </button>
+
+                {/* Toasts handled via useEffect to avoid firing on every render */}
+
                 <p className='flex items-center gap-2 justify-center'>
                     New here?
                     <Link href={`/sign-up`} className='text-blue-500 underline'>Create new account</Link>

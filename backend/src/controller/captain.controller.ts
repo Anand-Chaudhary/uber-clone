@@ -10,8 +10,9 @@ export const registerCaptain = async (req: Request, res: Response)=>{
         console.log(error.array());
     }
     const { fullname, email, password, vehicle } = req.body;
+    const normalizedEmail = (email as string).toLowerCase().trim();
 
-    const existingUser = await CaptainModel.findOne({email})
+    const existingUser = await CaptainModel.findOne({ email: normalizedEmail })
 
     if(existingUser){
         return res.json({
@@ -22,22 +23,32 @@ export const registerCaptain = async (req: Request, res: Response)=>{
 
     const hashPassword: string = await CaptainModel.hashPassword(password)
 
-    const user = await captainService.registerCaptain({
-        firstname: fullname.firstname,
-        lastname: fullname.lastname, 
-        email, 
-        password: hashPassword,
-        vehicleType: vehicle.vehicleType,
-        color: vehicle.color,
-        plate: vehicle.plate,
-        capacity: vehicle.capacity
-    });
+    let user;
+    try {
+        user = await captainService.registerCaptain({
+            firstname: fullname.firstname,
+            lastname: fullname.lastname, 
+            email: normalizedEmail, 
+            password: hashPassword,
+            vehicleType: vehicle.vehicleType,
+            color: vehicle.color,
+            plate: vehicle.plate,
+            capacity: vehicle.capacity
+        });
+    } catch (err: any) {
+        if (err?.code === 11000 && err?.keyPattern?.email) {
+            return res.status(409).json({ success: false, message: "User Exists" });
+        }
+        throw err;
+    }
 
     const token = user.generateAuthToken();
+    const safeCaptain = user.toObject();
+    delete (safeCaptain as any).password;
     return res.status(201).json({
         success: true,
         message: "User registered successfully",
-        user,
+        user: safeCaptain,
         token
     });
 }
@@ -49,8 +60,9 @@ export const loginCaptain = async (req: Request, res: Response) => {
     }
 
     const { email, password } = req.body;
+    const normalizedEmailLogin = (email as string).toLowerCase().trim();
 
-    const existingCaptain = await CaptainModel.findOne({ email }).select("+password");
+    const existingCaptain = await CaptainModel.findOne({ email: normalizedEmailLogin }).select("+password");
 
     if (!existingCaptain) {
         return res.status(401).json({
@@ -72,16 +84,23 @@ export const loginCaptain = async (req: Request, res: Response) => {
 
     res.cookie('token', token)
 
+    const safeCaptain = existingCaptain.toObject();
+    delete (safeCaptain as any).password;
     return res.status(201).json({
         success: true,
         message: "Captain Logged In",
-        existingCaptain,
+        existingCaptain: safeCaptain,
         token
     })
 }
 
 export const getCaptainProfile = async (req: Request, res: Response) => {
-    return res.status(200).json(req.captain)
+    if (!req.captain) {
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const safeCaptain = req.captain.toObject();
+    delete (safeCaptain as any).password;
+    return res.status(200).json(safeCaptain)
 }
 
 export const logoutCaptain = async (req: Request, res: Response) => {
