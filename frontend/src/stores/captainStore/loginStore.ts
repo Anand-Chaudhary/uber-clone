@@ -5,12 +5,12 @@ interface LoginUserStates{
     loading: boolean
     error: string | null
     success: boolean
-    token: string | null,
+    token: string | null
     message: string | null
     login: (data: {email: string, password: string})=> Promise<void>
 }
 
-export const loginStore = create<LoginUserStates>((set)=>({
+export const loginCatainStore = create<LoginUserStates>((set)=>({
     loading: false,
     error: null,
     success: false,
@@ -18,7 +18,7 @@ export const loginStore = create<LoginUserStates>((set)=>({
     token: null,
 
     login: async (data) => {
-        set({loading: true, token: null, success: false, error: null, message: null});
+        set({loading: true, success: false, error: null, message: null});
         try{
             const res = await loginApi.loginUser(data);
 
@@ -29,7 +29,7 @@ export const loginStore = create<LoginUserStates>((set)=>({
             if (ok) {
                 set({loading: false, success: true, error: null, message: msg || 'User Logged-In'})
                 localStorage.setItem('token', token)
-                localStorage.setItem('role', 'user')
+                localStorage.setItem('role', 'captain')
             } else {
                 set({loading: false, success: false, error: msg || 'Failed to login User', message: msg || null})
             }

@@ -7,8 +7,11 @@ import logo from '@/assets/logo-removebg.png'
 import { registerStore } from '@/stores/userStore/registerStore'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const SignUp = () => {
+
+  const router = useRouter()
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -18,23 +21,34 @@ const SignUp = () => {
   const { loading, error, register, success, message } = registerStore()
 
   useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      const role = localStorage.getItem('role')
+      if (role === 'captain') router.push(`/captain/home`)
+      else router.push(`/user/home`)
+    }
+  }, [router])
+
+  useEffect(() => {
     if (message) {
       if (success) toast.success(message)
       else toast.error(message || error || 'Something went wrong')
     }
   }, [message, success, error])
 
+  useEffect(() => {
+    if (success) {
+      const role = localStorage.getItem('role')
+      if (role === 'captain') router.push(`/captain/home`)
+      else router.push(`/user/home`)
+    }
+  }, [success, router])
+
   // eslint-disable-next-line
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     await register(form);
 
-    console.log({
-      email: form.email,
-      password: form.password,
-      fullname: { firstname: form.fullname.firstname, lastname: form.fullname.lastname },
-    })
-    
     setForm({ email: '', password: '', fullname: { firstname: '', lastname: '' } })
   }
 

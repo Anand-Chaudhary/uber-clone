@@ -2,26 +2,60 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import logo from '@/assets/logo-removebg.png'
+import { registerCaptainStore } from '@/stores/captainStore/registerStore'
+import { Captain } from '@/types/captain.types'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const CaptainSignup = () => {
-  const [form, setForm] = useState({
+  const router = useRouter()
+  const [form, setForm] = useState<Captain>({
     email: '',
     password: '',
     fullname: { firstname: '', lastname: '' },
-    vehicle: { color: '', plate: '', vehicleType: 'Car', capacity: '' },
+    vehicle: { color: '', plate: '', vehicleType: 'two wheeler', capacity: 0 },
   })
+
+  const { loading, error, success, message, register } = registerCaptainStore()
+
+  useEffect(()=>{
+    const token = localStorage.getItem('token')
+    if(token){
+      const role = localStorage.getItem('role')
+      if(role === 'captain') router.push(`/captain/home`)
+      else router.push(`/user/home`)
+    }
+  }, [router])
+
+  useEffect(() => {
+    if (message) {
+      if (success) toast.success(message)
+      else toast.error(message || error || 'Something went wrong')
+    }
+  }, [message, success, error])
+
+  useEffect(()=>{
+    if(success){
+      const role = localStorage.getItem('role')
+      if(role === 'captain') router.push(`/captain/home`)
+      else router.push(`/user/home`)
+    }
+  }, [router, success])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmit = (e: any) => {
     e.preventDefault()
-    console.log(form)
+
+    register(form)
+
     setForm({
       email: '',
       password: '',
       fullname: { firstname: '', lastname: '' },
-      vehicle: { color: '', plate: '', vehicleType: 'Car', capacity: '' },
+      vehicle: { color: '', plate: '', vehicleType: 'two wheeler', capacity: 0 },
     })
   }
 
@@ -94,13 +128,12 @@ const CaptainSignup = () => {
             onChange={(e) => setForm({ ...form, vehicle: { ...form.vehicle, vehicleType: e.target.value } })}
             className='bg-[#eeeeee] rounded text-black outline-none p-4 w-full text-lg placeholder:text-base'
           >
-            <option value='Car'>Car</option>
-            <option value='Bike'>Bike</option>
-            <option value='Auto'>Auto</option>
+            <option value='two wheeler'>Two Wheeler</option>
+            <option value='four wheeler'>Four Wheeler</option>
           </select>
           <input
             value={form.vehicle.capacity}
-            onChange={(e) => setForm({ ...form, vehicle: { ...form.vehicle, capacity: e.target.value } })}
+            onChange={(e) => setForm({ ...form, vehicle: { ...form.vehicle, capacity: parseInt(e.target.value) } })}
             className='bg-[#eeeeee] rounded text-black outline-none p-4 w-full text-lg placeholder:text-base'
             placeholder='Capacity (e.g., 4)'
             type='number'
@@ -109,7 +142,15 @@ const CaptainSignup = () => {
           />
         </div>
 
-        <button className='bg-black text-white font-semibold mb-7 rounded p-4 w-full' type='submit'>Create captain account</button>
+        <button className={`${loading ? `bg-gray-500 cursor-not-allowed` : `bg-black cursor-pointer`} w-full text-white font-semibold mb-7 rounded p-4 w-full' type='submit'`} type='submit'>
+          {
+                        loading ?
+                            <p className='flex gap-8'>
+                                <Loader2 className='h-4 w-4 animate-spin' />
+                                Wait...
+                            </p> : <p>Create Captain Account</p>
+                    }
+        </button>
         <p className='flex items-center gap-2 justify-center'>
           Already registered?
           <Link href={`/captain-login`} className='text-blue-500 underline'>Log-in</Link>

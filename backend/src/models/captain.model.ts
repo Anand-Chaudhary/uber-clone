@@ -82,7 +82,7 @@ const CaptainSchema: Schema<Captain> = new Schema({
     },
     vehicleType: {
       type: String,
-      enum: ["two wheeler", "four wheeler"],
+      enum: ["Select", "two wheeler", "four wheeler"],
       required: true,
     },
   },

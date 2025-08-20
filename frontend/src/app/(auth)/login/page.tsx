@@ -7,14 +7,25 @@ import Link from 'next/link'
 import { loginStore } from '@/stores/userStore/loginStore'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const Login = () => {
+    const router = useRouter()
     const [form, setForm] = useState({
         email: "",
         password: ""
     })
-    
+
     const { loading, error, success, login, message } = loginStore()
+
+    useEffect(() => {
+        const token = localStorage.getItem('token')
+        if (token) {
+            const role = localStorage.getItem('role')
+            if (role === 'captain') router.push(`/captain/home`)
+            else router.push(`/user/home`)
+        }
+    }, [router])
 
     useEffect(() => {
         if (message) {
@@ -23,11 +34,18 @@ const Login = () => {
         }
     }, [message, success, error])
 
+    useEffect(() => {
+        if (success) {
+            const role = localStorage.getItem('role')
+            if (role === 'captain') router.push(`/captain/home`)
+            else router.push(`/user/home`)
+        }
+    }, [success, router])
+
     //eslint-disable-next-line
     const handleSubmit = (e: any) => {
         e.preventDefault();
         login(form)
-        console.log(form);
         setForm({ ...form, email: "", password: "" })
     }
 
