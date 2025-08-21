@@ -1,4 +1,4 @@
-import { loginApi } from "@/services/api/user/loginApi"
+import { loginApi } from "@/services/api/captain/loginApi"
 import { create } from "zustand"
 
 interface LoginUserStates{
@@ -8,6 +8,7 @@ interface LoginUserStates{
     token: string | null
     message: string | null
     login: (data: {email: string, password: string})=> Promise<void>
+    reset: ()=> void
 }
 
 export const loginCatainStore = create<LoginUserStates>((set)=>({
@@ -44,4 +45,5 @@ export const loginCatainStore = create<LoginUserStates>((set)=>({
             })
         }
     },
+    reset: ()=> set({ loading: false, error: null, success: false, message: null })
 }))

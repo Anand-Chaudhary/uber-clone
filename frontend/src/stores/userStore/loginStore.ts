@@ -8,6 +8,7 @@ interface LoginUserStates{
     token: string | null,
     message: string | null
     login: (data: {email: string, password: string})=> Promise<void>
+    reset: () => void
 }
 
 export const loginStore = create<LoginUserStates>((set)=>({
@@ -44,4 +45,5 @@ export const loginStore = create<LoginUserStates>((set)=>({
             })
         }
     },
+    reset: () => set({ loading: false, error: null, success: false, message: null })
 }))

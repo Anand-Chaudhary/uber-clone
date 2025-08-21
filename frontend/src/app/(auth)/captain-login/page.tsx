@@ -16,14 +16,23 @@ const CaptainLogin = () => {
         password: ""
     })
 
-    const { loading, error, success, message, login } = loginCatainStore()
+    const { loading, error, success, message, login, reset } = loginCatainStore()
+
+    // Clear stale state on mount to prevent redirect loops
+    useEffect(() => {
+        reset()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     useEffect(()=>{
         const token = localStorage.getItem('token')
-        if(token){
-            const role = localStorage.getItem('role')
-            if(role === 'captain') router.push(`/captain/home`)
-            else router.push(`/user/home`)
+        const role = localStorage.getItem('role')
+        if(token && (role === 'captain' || role === 'user')){
+            if(role === 'captain') router.replace(`/captain/home`)
+            else router.replace(`/user/home`)
+        } else if (token && !role) {
+            localStorage.removeItem('token')
+            localStorage.removeItem('role')
         }
     }, [router])
 
@@ -37,8 +46,8 @@ const CaptainLogin = () => {
     useEffect(()=>{
         if(success){
             const role = localStorage.getItem('role')
-            if(role === 'captain') router.push(`/captain/home`)
-            else router.push(`/user/home`)
+            if(role === 'captain') router.replace(`/captain/home`)
+            else router.replace(`/user/home`)
         }
     }, [success, router])
 

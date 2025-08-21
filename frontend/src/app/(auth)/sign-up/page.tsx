@@ -22,10 +22,14 @@ const SignUp = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    if (token) {
-      const role = localStorage.getItem('role')
+    const role = localStorage.getItem('role')
+    if (token && (role === 'captain' || role === 'user')) {
       if (role === 'captain') router.push(`/captain/home`)
       else router.push(`/user/home`)
+    } else if (token && !role) {
+      // Clear stale token without role to prevent redirect loop
+      localStorage.removeItem('token')
+      localStorage.removeItem('role')
     }
   }, [router])
 

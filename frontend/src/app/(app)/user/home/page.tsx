@@ -1,11 +1,16 @@
 "use client"
 
+import LogoutButton from '@/components/ui/LogoutButton'
 import React from 'react'
 
 const UserHome = () => {
 
   return (
-    <div>UserHome</div>
+    <>
+      <div>UserHome</div>
+
+      <LogoutButton />
+    </>
   )
 }
 

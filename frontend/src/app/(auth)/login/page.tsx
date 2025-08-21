@@ -16,14 +16,24 @@ const Login = () => {
         password: ""
     })
 
-    const { loading, error, success, login, message } = loginStore()
+    const { loading, error, success, login, message, reset } = loginStore()
+
+    // Clear any stale success/message state when visiting login to avoid redirect loops
+    useEffect(() => {
+        reset()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     useEffect(() => {
         const token = localStorage.getItem('token')
-        if (token) {
-            const role = localStorage.getItem('role')
+        const role = localStorage.getItem('role')
+        if (token && (role === 'captain' || role === 'user')) {
             if (role === 'captain') router.push(`/captain/home`)
             else router.push(`/user/home`)
+        } else if (token && !role) {
+            // Clear stale token without role to prevent redirect loop
+            localStorage.removeItem('token')
+            localStorage.removeItem('role')
         }
     }, [router])
 
